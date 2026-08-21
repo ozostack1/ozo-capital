@@ -30,6 +30,7 @@ export const DirectChatDrawer: React.FC = () => {
     setIsChatDrawerOpen,
     sendDirectChatMessage,
     currentUser,
+    isAuthenticated,
     userConnections,
     removeConnection,
     toggleFollowUser,
@@ -45,10 +46,16 @@ export const DirectChatDrawer: React.FC = () => {
   const [searchFilter, setSearchFilter] = useState('');
   const [mobileChatView, setMobileChatView] = useState<'contacts' | 'chat'>('chat');
 
+  // STRICT AUTHENTICATION GUARD:
+  // Messages and messenger drawer are ONLY accessible AFTER login (authenticated users only)
+  if (!isAuthenticated || !currentUser || currentUser.role === 'guest') {
+    return null;
+  }
+
   // STRICT SINGLE-USER ISOLATION:
   // Only display conversations where the currently logged-in user is a verified participant!
   const userConversations = chatConversations.filter(c => {
-    if (!currentUser) return false;
+    if (!currentUser || currentUser.role === 'guest') return false;
     if (c.participantIds && c.participantIds.length > 0) {
       return c.participantIds.includes(currentUser.id);
     }

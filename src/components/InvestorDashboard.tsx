@@ -87,8 +87,14 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
 
   const currentInvestor = investors.find(i => i.id === currentUser.id || i.name.toLowerCase() === currentUser.name.toLowerCase()) || investors[0];
 
+  // STRICT SINGLE-INVESTOR ISOLATION: Only show inbound pitches sent to this specific investor!
+  const myInboundPitches = pitchRequests.filter(
+    p => p.investorId === currentInvestor?.id || p.investorId === currentUser.id || p.investorName?.toLowerCase() === currentUser.name?.toLowerCase()
+  );
+
   const [activeTab, setActiveTab] = useState<'fund_seekers' | 'pipeline' | 'inbox' | 'profile_settings'>('fund_seekers');
-  const [selectedInboxPitch, setSelectedInboxPitch] = useState<PitchRequest | null>(pitchRequests[0] || null);
+  const [selectedInboxPitchId, setSelectedInboxPitchId] = useState<string | null>(null);
+  const activeInboxPitch = myInboundPitches.find(p => p.id === selectedInboxPitchId) || myInboundPitches[0] || null;
   const [replyText, setReplyText] = useState('');
 
   // Profile, Thesis & Intake Settings State
@@ -147,19 +153,15 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
   });
 
   const handleSendReply = () => {
-    if (!selectedInboxPitch || !replyText.trim()) return;
-    sendPitchMessage(selectedInboxPitch.id, replyText);
+    if (!activeInboxPitch || !replyText.trim()) return;
+    sendPitchMessage(activeInboxPitch.id, replyText);
     setReplyText('');
     showToast('Reply message sent to founder.');
   };
 
   const handleStatusChange = (status: PitchRequest['status']) => {
-    if (!selectedInboxPitch) return;
-    updatePitchStatus(selectedInboxPitch.id, status);
-    setSelectedInboxPitch({
-      ...selectedInboxPitch,
-      status
-    });
+    if (!activeInboxPitch) return;
+    updatePitchStatus(activeInboxPitch.id, status);
     showToast(`Pitch status updated to ${status.replace('_', ' ')}.`);
   };
 
@@ -296,7 +298,7 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
           <div className="flex items-center justify-around sm:justify-center space-x-4 bg-[#162038] px-3.5 py-2 rounded-xl border border-slate-700 text-xs">
             <div className="text-center sm:text-left">
               <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Inbound</span>
-              <p className="text-base font-extrabold font-mono text-amber-400 mt-0.5">{pitchRequests.length}</p>
+              <p className="text-base font-extrabold font-mono text-amber-400 mt-0.5">{myInboundPitches.length}</p>
             </div>
             <div className="border-l border-slate-700 pl-4 text-center sm:text-left">
               <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Deals</span>
@@ -341,7 +343,7 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
           }`}
         >
           <MessageSquare className="w-4 h-4 text-amber-400" />
-          <span>Inbound Pitches ({pitchRequests.length})</span>
+          <span>Inbound Pitches ({myInboundPitches.length})</span>
         </button>
 
         <button
@@ -778,23 +780,23 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
             <div className="flex items-center justify-between pb-3">
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[#0A1128]">
-                  Inbound Pitches ({pitchRequests.length})
+                  Inbound Pitches ({myInboundPitches.length})
                 </h4>
                 <p className="text-[11px] text-slate-500">Founders directly pitching your fund</p>
               </div>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-mono font-bold">
-                {pitchRequests.filter(p => p.status === 'pending').length} New
+                {myInboundPitches.filter(p => p.status === 'pending').length} New
               </span>
             </div>
 
-            {pitchRequests.map((pitch) => {
+            {myInboundPitches.map((pitch) => {
               const startup = startups.find(s => s.id === pitch.startupId);
-              const isSelected = selectedInboxPitch?.id === pitch.id;
+              const isSelected = activeInboxPitch?.id === pitch.id;
 
               return (
                 <button
                   key={pitch.id}
-                  onClick={() => setSelectedInboxPitch(pitch)}
+                  onClick={() => setSelectedInboxPitchId(pitch.id)}
                   className={`w-full text-left p-3.5 rounded-xl transition-all cursor-pointer mt-1.5 ${
                     isSelected
                       ? 'bg-white border-2 border-amber-400 shadow-sm text-[#0A1128]'
@@ -825,7 +827,7 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
               );
             })}
 
-            {pitchRequests.length === 0 && (
+            {myInboundPitches.length === 0 && (
               <div className="p-8 text-center text-xs text-slate-400">
                 No inbound pitches yet. As founders discover your profile, pitches with verified Stripe metrics will arrive here.
               </div>
@@ -834,8 +836,8 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
 
           {/* Active Pitch Details & Messaging Feed */}
           <div className="md:col-span-2 flex flex-col justify-between bg-white p-6 space-y-4 text-[#0A1128]">
-            {selectedInboxPitch ? (() => {
-              const matchedStartup = startups.find(s => s.id === selectedInboxPitch.startupId);
+            {activeInboxPitch ? (() => {
+              const matchedStartup = startups.find(s => s.id === activeInboxPitch.startupId);
 
               return (
                 <>
@@ -887,7 +889,7 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
                         )}
 
                         <button
-                          onClick={() => handleAddToPipelineFromPitch(selectedInboxPitch)}
+                          onClick={() => handleAddToPipelineFromPitch(activeInboxPitch)}
                           className="px-3.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-extrabold flex items-center space-x-1 shadow-sm transition-all cursor-pointer transform hover:-translate-y-0.5"
                         >
                           <Plus className="w-3.5 h-3.5 text-slate-950" />
@@ -913,7 +915,7 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
                         </div>
                         <div>
                           <span className="text-slate-500 text-[10px] font-bold uppercase">Dilution Ask</span>
-                          <p className="text-amber-600 font-mono font-extrabold">${(selectedInboxPitch.askAmount / 1000).toFixed(0)}k ({selectedInboxPitch.proposedEquity}%)</p>
+                          <p className="text-amber-600 font-mono font-extrabold">${(activeInboxPitch.askAmount / 1000).toFixed(0)}k ({activeInboxPitch.proposedEquity}%)</p>
                         </div>
                       </div>
                     )}
@@ -927,7 +929,7 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
                             key={st}
                             onClick={() => handleStatusChange(st)}
                             className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer capitalize ${
-                              selectedInboxPitch.status === st
+                              activeInboxPitch.status === st
                                 ? 'bg-[#0A1128] text-white shadow-xs'
                                 : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                             }`}
@@ -944,13 +946,13 @@ export const InvestorDashboard: React.FC<InvestorDashboardProps> = ({
                     <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 space-y-1.5">
                       <div className="flex items-center justify-between text-[11px] text-slate-500">
                         <span className="font-bold text-[#0A1128]">Original Pitch Memo</span>
-                        <span className="font-mono">{new Date(selectedInboxPitch.createdAt).toLocaleDateString()}</span>
+                        <span className="font-mono">{new Date(activeInboxPitch.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <p className="font-bold text-[#0A1128] text-xs">{selectedInboxPitch.pitchSubject}</p>
-                      <p className="text-slate-700 leading-relaxed font-sans whitespace-pre-line">{selectedInboxPitch.pitchMessage}</p>
+                      <p className="font-bold text-[#0A1128] text-xs">{activeInboxPitch.pitchSubject}</p>
+                      <p className="text-slate-700 leading-relaxed font-sans whitespace-pre-line">{activeInboxPitch.pitchMessage}</p>
                     </div>
 
-                    {selectedInboxPitch.messages.map((msg) => {
+                    {activeInboxPitch.messages.map((msg) => {
                       const isMe = msg.senderRole === 'investor';
                       return (
                         <div

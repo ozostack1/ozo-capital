@@ -151,20 +151,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewStartupModal }) => {
               )}
             </button>
 
-            {/* Messages Quick Button */}
-            <button
-              onClick={() => setIsChatDrawerOpen(true)}
-              className="flex items-center space-x-1 text-xs font-bold text-slate-200 bg-[#162038] hover:bg-[#202c4c] border border-slate-700 hover:border-amber-400 px-2.5 py-0.5 rounded-lg transition-all cursor-pointer shadow-sm shrink-0"
-              title="Open 1-on-1 Messages"
-            >
-              <MessageSquare className="w-3 h-3 text-amber-400" />
-              <span className="hidden xs:inline sm:inline">Messages</span>
-              {totalUserUnreadMessages > 0 && (
-                <span className="w-4 h-4 rounded-full bg-amber-400 text-slate-950 text-[10px] font-extrabold flex items-center justify-center font-mono">
-                  {totalUserUnreadMessages}
-                </span>
-              )}
-            </button>
+            {/* Messages Quick Button - ONLY SHOWN AFTER LOGIN */}
+            {isAuthenticated && currentRole !== 'guest' && (
+              <button
+                onClick={() => setIsChatDrawerOpen(true)}
+                className="flex items-center space-x-1 text-xs font-bold text-slate-200 bg-[#162038] hover:bg-[#202c4c] border border-slate-700 hover:border-amber-400 px-2.5 py-0.5 rounded-lg transition-all cursor-pointer shadow-sm shrink-0"
+                title="Open 1-on-1 Messages"
+              >
+                <MessageSquare className="w-3 h-3 text-amber-400" />
+                <span className="hidden xs:inline sm:inline">Messages</span>
+                {totalUserUnreadMessages > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-amber-400 text-slate-950 text-[10px] font-extrabold flex items-center justify-center font-mono">
+                    {totalUserUnreadMessages}
+                  </span>
+                )}
+              </button>
+            )}
 
             <button 
               onClick={() => setIsSupportModalOpen(true)}

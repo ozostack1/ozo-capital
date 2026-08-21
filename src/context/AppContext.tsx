@@ -353,8 +353,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [networkModalActiveTab, setNetworkModalActiveTab] = useState<'connections' | 'followers' | 'following'>('connections');
 
   const [chatConversations, setChatConversations] = useState<DirectChatConversation[]>(() => {
-    const saved = localStorage.getItem('trustmrr_chats');
-    return saved ? JSON.parse(saved) : INITIAL_DIRECT_CHAT_CONVERSATIONS;
+    try {
+      const saved = localStorage.getItem('trustmrr_chats');
+      if (saved) {
+        const parsed: DirectChatConversation[] = JSON.parse(saved);
+        return parsed.map(c => {
+          if (c.participantIds && c.participantIds.length > 0) return c;
+          const senderIds = Array.from(new Set((c.messages || []).map(m => m.senderId).filter(Boolean)));
+          const allIds = Array.from(new Set([...senderIds, c.participantId].filter(Boolean)));
+          return {
+            ...c,
+            participantIds: allIds.length > 0 ? allIds : ['user-alex', c.participantId]
+          };
+        });
+      }
+      return INITIAL_DIRECT_CHAT_CONVERSATIONS;
+    } catch {
+      return INITIAL_DIRECT_CHAT_CONVERSATIONS;
+    }
   });
 
   const [activeChatParticipantId, setActiveChatParticipantId] = useState<string | null>(null);

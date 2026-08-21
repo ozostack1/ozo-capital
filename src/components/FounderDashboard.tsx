@@ -84,7 +84,7 @@ export const FounderDashboard: React.FC<FounderDashboardProps> = ({
   const myStartup = startups.find(s => s.founderId === currentUser.id || s.id === currentUser.associatedStartupId) || startups[0];
 
   const [activeSubTab, setActiveSubTab] = useState<'metrics' | 'interested_investors' | 'raise_round' | 'investors_directory' | 'pitch_inbox'>('metrics');
-  const [selectedPitch, setSelectedPitch] = useState<PitchRequest | null>(pitchRequests[0] || null);
+  const [selectedPitchId, setSelectedPitchId] = useState<string | null>(null);
   const [chatMessage, setChatMessage] = useState('');
   const [isSimulatingStripeSync, setIsSimulatingStripeSync] = useState(false);
   const [investorSearch, setInvestorSearch] = useState('');
@@ -93,6 +93,7 @@ export const FounderDashboard: React.FC<FounderDashboardProps> = ({
 
   // Filter pitches and interests for this founder
   const myPitches = pitchRequests.filter(p => p.founderId === currentUser.id || p.startupId === myStartup?.id);
+  const activeSelectedPitch = myPitches.find(p => p.id === selectedPitchId) || myPitches[0] || null;
   const founderInterests = getFounderReceivedInterests(currentUser.id);
   const filteredInterests = founderInterests.filter(i => {
     if (interestStatusFilter === 'all') return true;
@@ -167,8 +168,8 @@ export const FounderDashboard: React.FC<FounderDashboardProps> = ({
 
   const handleSendMessage = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!selectedPitch || !chatMessage.trim()) return;
-    sendPitchMessage(selectedPitch.id, chatMessage.trim());
+    if (!activeSelectedPitch || !chatMessage.trim()) return;
+    sendPitchMessage(activeSelectedPitch.id, chatMessage.trim());
     setChatMessage('');
     showToast('Message sent to investor');
   };
@@ -1190,9 +1191,9 @@ export const FounderDashboard: React.FC<FounderDashboardProps> = ({
             {myPitches.map((pitch) => (
               <button
                 key={pitch.id}
-                onClick={() => setSelectedPitch(pitch)}
+                onClick={() => setSelectedPitchId(pitch.id)}
                 className={`w-full text-left p-3 rounded-lg transition-colors cursor-pointer ${
-                  selectedPitch?.id === pitch.id
+                  activeSelectedPitch?.id === pitch.id
                     ? 'bg-zinc-800 text-white border border-zinc-700'
                     : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
                 }`}
@@ -1217,29 +1218,29 @@ export const FounderDashboard: React.FC<FounderDashboardProps> = ({
 
           {/* Active Chat Conversation Area */}
           <div className="md:col-span-2 flex flex-col justify-between bg-[#080B11] p-5">
-            {selectedPitch ? (
+            {activeSelectedPitch ? (
               <>
                 {/* Conversation Header */}
                 <div className="border-b border-zinc-800 pb-3 flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <img
-                      src={selectedPitch.investorAvatar}
-                      alt={selectedPitch.investorName}
+                      src={activeSelectedPitch.investorAvatar}
+                      alt={activeSelectedPitch.investorName}
                       className="w-10 h-10 rounded-full object-cover border border-zinc-700"
                     />
                     <div>
-                      <h4 className="font-bold text-sm text-white">{selectedPitch.investorName}</h4>
-                      <p className="text-xs text-zinc-400">{selectedPitch.investorFirm} • Ask: ${(selectedPitch.askAmount / 1000).toFixed(0)}k</p>
+                      <h4 className="font-bold text-sm text-white">{activeSelectedPitch.investorName}</h4>
+                      <p className="text-xs text-zinc-400">{activeSelectedPitch.investorFirm} • Ask: ${(activeSelectedPitch.askAmount / 1000).toFixed(0)}k</p>
                     </div>
                   </div>
                   <span className="text-xs px-2 py-1 rounded bg-slate-100 text-slate-700 border border-slate-300 font-mono">
-                    Status: {selectedPitch.status.replace('_', ' ').toUpperCase()}
+                    Status: {activeSelectedPitch.status.replace('_', ' ').toUpperCase()}
                   </span>
                 </div>
 
                 {/* Messages Feed */}
                 <div className="py-4 space-y-3 overflow-y-auto max-h-[300px]">
-                  {selectedPitch.messages.map((msg) => {
+                  {activeSelectedPitch.messages.map((msg) => {
                     const isMe = msg.senderRole === 'founder';
                     return (
                       <div
