@@ -1,0 +1,6 @@
+{
+  "name": "TrustMRR Pulse: Founder & Investor Hub",
+  "description": "Verified MRR metrics, deal flow CRM, direct pitching, community discussions, and tiered subscriptions connecting SaaS founders and accredited investors.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

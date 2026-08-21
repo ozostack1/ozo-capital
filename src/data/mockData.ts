@@ -1,0 +1,1398 @@
+import { 
+  Startup, 
+  Investor, 
+  PitchRequest, 
+  DealPipelineItem, 
+  CommunityPost, 
+  VerificationRequest, 
+  SubscriptionPlan, 
+  SubscriberRecord,
+  UserConnection, 
+  UserFollow,
+  InvestorInterest,
+  DirectChatConversation, 
+  PlatformUser 
+} from '../types';
+
+export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
+  {
+    id: 'free',
+    name: 'Explorer Free',
+    roleTarget: 'founder',
+    priceMonthly: 0,
+    priceAnnual: 0,
+    tagline: 'Basic listing with public high-level metrics teaser',
+    isActive: true,
+    badgeText: 'Basic',
+    features: [
+      'Basic startup profile listing',
+      'Public MRR directory ranking',
+      'Receive inbound investor intros (up to 2/mo)',
+      'Community discussion access'
+    ],
+    limits: {
+      canPitchAllInvestors: false,
+      canViewRawFinancials: false,
+      canAccessDiligenceRoom: false,
+      hasVerifiedStripeBadge: false,
+      aiDealMemoAudit: false,
+      directFounderMessaging: false,
+      exportDiligenceData: false
+    }
+  },
+  {
+    id: 'pro_founder',
+    name: 'Founder Pro',
+    roleTarget: 'founder',
+    priceMonthly: 79,
+    priceAnnual: 65,
+    popular: true,
+    isActive: true,
+    badgeText: 'Most Popular',
+    tagline: 'Verified Stripe Proof Badge + Direct pitches to all VCs',
+    features: [
+      'Official Gold Verified Stripe MRR Badge',
+      'Unlimited Direct Pitches to 850+ Accredited Angels & VCs',
+      'AI-Powered Valuation & Investment Score Auditor',
+      'Deal Room with pitch deck & cap table hosting',
+      'Priority directory ranking & badge highlights',
+      'Direct messaging with verified investors'
+    ],
+    limits: {
+      canPitchAllInvestors: true,
+      canViewRawFinancials: true,
+      canAccessDiligenceRoom: true,
+      hasVerifiedStripeBadge: true,
+      aiDealMemoAudit: true,
+      directFounderMessaging: true,
+      exportDiligenceData: true
+    }
+  },
+  {
+    id: 'elite_founder',
+    name: 'Founder Elite Syndicate',
+    roleTarget: 'founder',
+    priceMonthly: 199,
+    priceAnnual: 159,
+    isActive: true,
+    badgeText: 'Scale Tier',
+    tagline: 'Dedicated placement, partner introductions & syndication',
+    features: [
+      'Everything in Founder Pro',
+      'Featured Weekly Newsletter Spotlight (45k+ investors)',
+      'Direct warm intro to Top 10 matching Tier-1 VCs',
+      'Term sheet negotiation guidance & legal cap table templates',
+      'Real-time view notifications when VCs inspect your metrics'
+    ],
+    limits: {
+      canPitchAllInvestors: true,
+      canViewRawFinancials: true,
+      canAccessDiligenceRoom: true,
+      hasVerifiedStripeBadge: true,
+      aiDealMemoAudit: true,
+      directFounderMessaging: true,
+      exportDiligenceData: true,
+      syndicateCoInvestAccess: true
+    }
+  },
+  {
+    id: 'accredited_investor',
+    name: 'Accredited Investor Pro',
+    roleTarget: 'investor',
+    priceMonthly: 149,
+    priceAnnual: 119,
+    popular: true,
+    isActive: true,
+    badgeText: 'VC Standard',
+    tagline: 'Complete financial audit access & direct founder deal flow',
+    features: [
+      'Instant access to raw Stripe-verified MRR & cohort retention data',
+      'Full Diligence Room unlocks (Cap Tables, Pitch Decks, P&L statements)',
+      'Direct founder outreach & instant 1-click meeting scheduler',
+      'Deal Flow Pipeline CRM (Kanban lead tracker)',
+      'Real-time alerts for new 20%+ MoM growth SaaS listings',
+      'Verified Accredited Investor Gold Badge'
+    ],
+    limits: {
+      canPitchAllInvestors: true,
+      canViewRawFinancials: true,
+      canAccessDiligenceRoom: true,
+      hasVerifiedStripeBadge: true,
+      aiDealMemoAudit: true,
+      directFounderMessaging: true,
+      exportDiligenceData: true
+    }
+  },
+  {
+    id: 'institutional_vc',
+    name: 'Institutional Fund / VC',
+    roleTarget: 'investor',
+    priceMonthly: 399,
+    priceAnnual: 319,
+    isActive: true,
+    badgeText: 'Enterprise',
+    tagline: 'Multi-seat fund access, term sheet engine & API diligence data',
+    features: [
+      'Everything in Investor Pro with up to 5 team seats',
+      'Automated Standard Term Sheet & SAFE Note Generator',
+      'Programmatic API access to verified SaaS metrics',
+      'Syndicate co-investment network priority allocation',
+      'Dedicated Venture Analyst for proprietary pipeline sourcing'
+    ],
+    limits: {
+      canPitchAllInvestors: true,
+      canViewRawFinancials: true,
+      canAccessDiligenceRoom: true,
+      hasVerifiedStripeBadge: true,
+      aiDealMemoAudit: true,
+      directFounderMessaging: true,
+      exportDiligenceData: true,
+      syndicateCoInvestAccess: true
+    }
+  }
+];
+
+export const INITIAL_SUBSCRIBERS: SubscriberRecord[] = [
+  {
+    id: 'sub-1',
+    userId: 'user-alex',
+    userName: 'Alex Rivera',
+    userEmail: 'alex@flowops.ai',
+    userRole: 'founder',
+    userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    companyName: 'FlowOps AI',
+    planId: 'pro_founder',
+    planName: 'Founder Pro',
+    billingCycle: 'monthly',
+    amount: 79,
+    status: 'active',
+    startDate: '2026-06-15',
+    renewsAt: '2026-09-15',
+    paymentMethod: 'Mastercard ending in 4242'
+  },
+  {
+    id: 'sub-2',
+    userId: 'inv-1',
+    userName: 'Sarah Chen',
+    userEmail: 'sarah.chen@horizonvc.io',
+    userRole: 'investor',
+    userAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    companyName: 'Horizon Venture Capital',
+    planId: 'institutional_vc',
+    planName: 'Institutional Fund / VC',
+    billingCycle: 'annual',
+    amount: 3828,
+    status: 'active',
+    startDate: '2026-04-10',
+    renewsAt: '2027-04-10',
+    paymentMethod: 'Visa ending in 8891'
+  },
+  {
+    id: 'sub-3',
+    userId: 'user-elena',
+    userName: 'Elena Rostova',
+    userEmail: 'elena@cyberguard.dev',
+    userRole: 'founder',
+    userAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+    companyName: 'CyberGuard Security',
+    planId: 'elite_founder',
+    planName: 'Founder Elite Syndicate',
+    billingCycle: 'monthly',
+    amount: 199,
+    status: 'active',
+    startDate: '2026-07-01',
+    renewsAt: '2026-09-01',
+    paymentMethod: 'Amex ending in 1004'
+  },
+  {
+    id: 'sub-4',
+    userId: 'inv-2',
+    userName: 'Vikram Mehta',
+    userEmail: 'vikram@venturesprint.com',
+    userRole: 'investor',
+    userAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80',
+    companyName: 'VentureSprint Angels',
+    planId: 'accredited_investor',
+    planName: 'Accredited Investor Pro',
+    billingCycle: 'monthly',
+    amount: 149,
+    status: 'active',
+    startDate: '2026-05-19',
+    renewsAt: '2026-09-19',
+    paymentMethod: 'Visa ending in 3320'
+  }
+];
+
+export const INITIAL_STARTUPS: Startup[] = [
+  {
+    id: 'startup-1',
+    name: 'FlowOps AI',
+    tagline: 'Autonomous AI workflows & observability for Kubernetes clusters',
+    description: 'FlowOps automates cloud infrastructure remediation and incident triage using specialized domain models. It seamlessly connects with AWS, GCP, and Datadog to cut DevOps MTTR by 74%.',
+    category: 'AI & Machine Learning',
+    logo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
+    stage: 'Seed',
+    foundedYear: 2024,
+    location: 'San Francisco, CA',
+    website: 'https://flowops.ai',
+    mrr: 48500,
+    arr: 582000,
+    growthRateMoM: 23.4,
+    churnRateMonthly: 1.1,
+    cac: 1250,
+    ltv: 18400,
+    customersCount: 142,
+    askAmount: 1200000,
+    valuation: 9500000,
+    targetRound: 'Seed Round ($1.2M at $9.5M Post)',
+    isVerified: true,
+    verificationStatus: 'verified_stripe',
+    verificationProofDate: '2026-08-15',
+    stripeConnected: true,
+    pitchDeckTitle: 'FlowOps Series Seed Pitch Deck (Q3 2026)',
+    pitchDeckSlidesCount: 14,
+    pitchSummary: 'We have reached $48.5k MRR growing 23% MoM with enterprise contracts from Fortune 500 tech teams. Raising $1.2M to expand go-to-market and accelerate model fine-tuning.',
+    keyMetricsHighlights: [
+      '48.5k Verified Monthly Revenue (+23.4% MoM)',
+      '14.7x LTV to CAC Ratio with negative net revenue churn',
+      '38 Enterprise POCs converting to annual upfront contracts'
+    ],
+    capTable: [
+      { holder: 'Alex Vance (CEO)', role: 'Founder', equityPercent: 54 },
+      { holder: 'Elena Rostova (CTO)', role: 'Co-Founder', equityPercent: 32 },
+      { holder: 'Employee Stock Pool', role: 'ESOP', equityPercent: 14 }
+    ],
+    teamSize: 7,
+    founderId: 'user-alex',
+    founderName: 'Alex Vance',
+    founderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    founderBio: 'Ex-Stripe Infrastructure Lead, 2x SaaS founder with prior $4M exit.',
+    founderEmail: 'alex@flowops.ai',
+    tags: ['AI Ops', 'Kubernetes', 'B2B Enterprise', 'Stripe Verified'],
+    viewsCount: 1840,
+    savesCount: 129,
+    diligenceRequestsCount: 38,
+    aiDealScore: 94,
+    aiValuationMultiple: '8.2x ARR',
+    aiThesisSnippet: 'Outstanding unit economics with 23% MoM expansion. Strong founder pedigree with deep infrastructure credibility.',
+    featured: true,
+    createdAt: '2026-07-10',
+    mrrHistory: [
+      { month: 'Mar', mrr: 21000, arr: 252000, newCustomers: 12, churnedCustomers: 1, netRetentionRate: 112 },
+      { month: 'Apr', mrr: 25400, arr: 304800, newCustomers: 16, churnedCustomers: 1, netRetentionRate: 116 },
+      { month: 'May', mrr: 31200, arr: 374400, newCustomers: 22, churnedCustomers: 0, netRetentionRate: 121 },
+      { month: 'Jun', mrr: 38000, arr: 456000, newCustomers: 25, churnedCustomers: 2, netRetentionRate: 119 },
+      { month: 'Jul', mrr: 44100, arr: 529200, newCustomers: 28, churnedCustomers: 1, netRetentionRate: 124 },
+      { month: 'Aug', mrr: 48500, arr: 582000, newCustomers: 31, churnedCustomers: 1, netRetentionRate: 128 }
+    ]
+  },
+  {
+    id: 'startup-2',
+    name: 'MetricScale',
+    tagline: 'Real-time billing analytics and churn prevention engine for Stripe & LemonSqueezy',
+    description: 'MetricScale provides automated customer dunning, failed payment recovery, and subscription cohort intelligence. Recovers an average of $3,400/month in lost revenue for mid-market SaaS companies.',
+    category: 'FinTech & Payments',
+    logo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=150&auto=format&fit=crop&q=80',
+    stage: 'Bootstrapped',
+    foundedYear: 2023,
+    location: 'Austin, TX',
+    website: 'https://metricscale.io',
+    mrr: 34200,
+    arr: 410400,
+    growthRateMoM: 18.7,
+    churnRateMonthly: 1.8,
+    cac: 680,
+    ltv: 7900,
+    customersCount: 380,
+    askAmount: 600000,
+    valuation: 4200000,
+    targetRound: 'Pre-Seed Growth Equity ($600k for 14.3%)',
+    isVerified: true,
+    verificationStatus: 'verified_stripe',
+    verificationProofDate: '2026-08-12',
+    stripeConnected: true,
+    pitchDeckTitle: 'MetricScale Growth Memo & Unit Economics',
+    pitchDeckSlidesCount: 11,
+    pitchSummary: 'Profitable bootstrapped SaaS with $34.2k MRR, 100% organic inbound via product-led growth. Raising first institutional round to build direct sales & integrations team.',
+    keyMetricsHighlights: [
+      '$34,200 MRR with 91% Gross Margin',
+      'Net negative churn via value-based usage tiers',
+      'Zero paid ad spend to date; 380 active paying SaaS customers'
+    ],
+    capTable: [
+      { holder: 'Rohan Sharma (Solo Founder)', role: 'Founder & CEO', equityPercent: 92 },
+      { holder: 'Early Advisor Pool', role: 'Advisors', equityPercent: 8 }
+    ],
+    teamSize: 4,
+    founderId: 'user-rohan',
+    founderName: 'Rohan Sharma',
+    founderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    founderBio: 'Bootstrapper & ex-Senior Product Manager at Brex. Built 3 profitable SaaS micro-tools.',
+    founderEmail: 'rohan@metricscale.io',
+    tags: ['Fintech', 'Subscription Analytics', 'Stripe Verified', 'Profitable'],
+    viewsCount: 1420,
+    savesCount: 94,
+    diligenceRequestsCount: 22,
+    aiDealScore: 89,
+    aiValuationMultiple: '6.8x ARR',
+    aiThesisSnippet: 'Capital-efficient bootstrapped growth with high retention. Prime candidate for growth acceleration.',
+    featured: true,
+    createdAt: '2026-06-20',
+    mrrHistory: [
+      { month: 'Mar', mrr: 18200, arr: 218400, newCustomers: 34, churnedCustomers: 4, netRetentionRate: 108 },
+      { month: 'Apr', mrr: 21400, arr: 256800, newCustomers: 41, churnedCustomers: 5, netRetentionRate: 110 },
+      { month: 'May', mrr: 25100, arr: 301200, newCustomers: 48, churnedCustomers: 3, netRetentionRate: 112 },
+      { month: 'Jun', mrr: 28900, arr: 346800, newCustomers: 53, churnedCustomers: 6, netRetentionRate: 113 },
+      { month: 'Jul', mrr: 31800, arr: 381600, newCustomers: 58, churnedCustomers: 5, netRetentionRate: 115 },
+      { month: 'Aug', mrr: 34200, arr: 410400, newCustomers: 64, churnedCustomers: 4, netRetentionRate: 117 }
+    ]
+  },
+  {
+    id: 'startup-3',
+    name: 'DevPilot Studio',
+    tagline: 'AI code review bot that prevents security leaks and refactoring debt',
+    description: 'DevPilot integrates into GitHub/GitLab pull requests, executing automated vulnerability scanning, test generation, and architecture compliance checks before merge.',
+    category: 'DevTools & Infra',
+    logo: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=150&auto=format&fit=crop&q=80',
+    stage: 'Pre-Seed',
+    foundedYear: 2025,
+    location: 'New York, NY',
+    website: 'https://devpilot.dev',
+    mrr: 19800,
+    arr: 237600,
+    growthRateMoM: 31.2,
+    churnRateMonthly: 2.3,
+    cac: 420,
+    ltv: 4900,
+    customersCount: 210,
+    askAmount: 750000,
+    valuation: 5000000,
+    targetRound: 'Pre-Seed SAFE ($750k Cap)',
+    isVerified: true,
+    verificationStatus: 'verified_stripe',
+    verificationProofDate: '2026-08-18',
+    stripeConnected: true,
+    pitchDeckTitle: 'DevPilot Seed Memo - AI Developer Tooling',
+    pitchDeckSlidesCount: 12,
+    pitchSummary: 'Rapidly viral among open source developers and dev teams. Growing 31% MoM with 210 paying teams and 14,000 GitHub app installs.',
+    keyMetricsHighlights: [
+      '+31.2% MoM revenue growth in last 90 days',
+      'Over 14,000 GitHub developers using free tier with 4.8% free-to-paid conversion',
+      'Integration partnerships underway with major CI/CD providers'
+    ],
+    capTable: [
+      { holder: 'Marcus Sterling', role: 'CEO', equityPercent: 50 },
+      { holder: 'Samantha Wu', role: 'CTO', equityPercent: 40 },
+      { holder: 'Advisors & Reserves', role: 'Pool', equityPercent: 10 }
+    ],
+    teamSize: 5,
+    founderId: 'user-marcus',
+    founderName: 'Marcus Sterling',
+    founderAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    founderBio: 'Ex-GitHub Senior Staff Engineer and contributor to core Git ecosystem.',
+    founderEmail: 'marcus@devpilot.dev',
+    tags: ['DevTools', 'AI Code Review', 'GitHub App', 'High Growth'],
+    viewsCount: 2190,
+    savesCount: 165,
+    diligenceRequestsCount: 44,
+    aiDealScore: 91,
+    aiValuationMultiple: '9.0x ARR',
+    aiThesisSnippet: 'Explosive bottoms-up developer adoption with remarkable viral coefficient. Excellent Pre-Seed candidate.',
+    featured: true,
+    createdAt: '2026-07-28',
+    mrrHistory: [
+      { month: 'Mar', mrr: 6200, arr: 74400, newCustomers: 18, churnedCustomers: 2, netRetentionRate: 105 },
+      { month: 'Apr', mrr: 8900, arr: 106800, newCustomers: 28, churnedCustomers: 3, netRetentionRate: 109 },
+      { month: 'May', mrr: 11800, arr: 141600, newCustomers: 36, churnedCustomers: 2, netRetentionRate: 114 },
+      { month: 'Jun', mrr: 15100, arr: 181200, newCustomers: 45, churnedCustomers: 4, netRetentionRate: 118 },
+      { month: 'Jul', mrr: 17200, arr: 206400, newCustomers: 52, churnedCustomers: 3, netRetentionRate: 121 },
+      { month: 'Aug', mrr: 19800, arr: 237600, newCustomers: 60, churnedCustomers: 4, netRetentionRate: 125 }
+    ]
+  },
+  {
+    id: 'startup-4',
+    name: 'CloudGuard Zero',
+    tagline: 'Zero-trust identity and privilege access management for distributed teams',
+    description: 'CloudGuard replaces clunky corporate VPNs with biometric browser extensions and temporary just-in-time micro-credentials.',
+    category: 'Security & Privacy',
+    logo: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150&auto=format&fit=crop&q=80',
+    stage: 'Series A',
+    foundedYear: 2023,
+    location: 'Boston, MA',
+    website: 'https://cloudguardzero.io',
+    mrr: 92400,
+    arr: 1108800,
+    growthRateMoM: 14.2,
+    churnRateMonthly: 0.6,
+    cac: 3800,
+    ltv: 42000,
+    customersCount: 88,
+    askAmount: 3500000,
+    valuation: 22000000,
+    targetRound: 'Series A Round ($3.5M for 15.9%)',
+    isVerified: true,
+    verificationStatus: 'verified_stripe',
+    verificationProofDate: '2026-08-01',
+    stripeConnected: true,
+    pitchDeckTitle: 'CloudGuard Zero Series A Investor Deck',
+    pitchDeckSlidesCount: 18,
+    pitchSummary: 'Surpassed $1.1M ARR milestone with 0.6% enterprise churn. Raising Series A to scale direct enterprise sales to Fortune 1000 buyers.',
+    keyMetricsHighlights: [
+      '$1.1M+ Verified ARR with near-zero enterprise churn (<0.6%)',
+      'Average contract value (ACV) of $12,600/year paid upfront',
+      'SOC2 Type II certified with 88 enterprise customers'
+    ],
+    capTable: [
+      { holder: 'Founding Team', role: 'Founders', equityPercent: 68 },
+      { holder: 'Seed Investors (Apex Ventures)', role: 'Seed Fund', equityPercent: 18 },
+      { holder: 'Option Pool', role: 'ESOP', equityPercent: 14 }
+    ],
+    teamSize: 16,
+    founderId: 'user-david',
+    founderName: 'David K. Mercer',
+    founderAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
+    founderBio: 'Former CISO at FinTech unicorn, CyberSecurity patent holder.',
+    founderEmail: 'david@cloudguardzero.io',
+    tags: ['Cybersecurity', 'SOC2', 'Enterprise SaaS', 'Series A'],
+    viewsCount: 3100,
+    savesCount: 245,
+    diligenceRequestsCount: 68,
+    aiDealScore: 96,
+    aiValuationMultiple: '10.5x ARR',
+    aiThesisSnippet: 'Premier cybersecurity assets with stellar contract lock-in. Minimal churn and expanding net retention make this a blue-chip SaaS asset.',
+    featured: false,
+    createdAt: '2026-05-15',
+    mrrHistory: [
+      { month: 'Mar', mrr: 64000, arr: 768000, newCustomers: 6, churnedCustomers: 0, netRetentionRate: 120 },
+      { month: 'Apr', mrr: 70200, arr: 842400, newCustomers: 7, churnedCustomers: 1, netRetentionRate: 122 },
+      { month: 'May', mrr: 75900, arr: 910800, newCustomers: 8, churnedCustomers: 0, netRetentionRate: 125 },
+      { month: 'Jun', mrr: 81500, arr: 978000, newCustomers: 8, churnedCustomers: 0, netRetentionRate: 126 },
+      { month: 'Jul', mrr: 87200, arr: 1046400, newCustomers: 9, churnedCustomers: 1, netRetentionRate: 127 },
+      { month: 'Aug', mrr: 92400, arr: 1108800, newCustomers: 10, churnedCustomers: 0, netRetentionRate: 130 }
+    ]
+  },
+  {
+    id: 'startup-5',
+    name: 'NexaFlow CRM',
+    tagline: 'High-velocity sales workspace tailored for fast-scaling remote teams',
+    description: 'NexaFlow combines call transcription, automated CRM logging, and predictive pipeline forecasting into a single lightning-fast web and desktop app.',
+    category: 'B2B SaaS',
+    logo: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=150&auto=format&fit=crop&q=80',
+    stage: 'Seed',
+    foundedYear: 2024,
+    location: 'Seattle, WA',
+    website: 'https://nexaflow.app',
+    mrr: 28400,
+    arr: 340800,
+    growthRateMoM: 19.8,
+    churnRateMonthly: 1.5,
+    cac: 790,
+    ltv: 8200,
+    customersCount: 165,
+    askAmount: 900000,
+    valuation: 6500000,
+    targetRound: 'Seed Round ($900k at $6.5M Cap)',
+    isVerified: true,
+    verificationStatus: 'verified_stripe',
+    verificationProofDate: '2026-08-10',
+    stripeConnected: true,
+    pitchDeckTitle: 'NexaFlow CRM Pitch Deck - Seed Stage',
+    pitchDeckSlidesCount: 13,
+    pitchSummary: 'Displacing clunky legacy CRMs for modern SMB sales squads. Over $28k MRR with 19.8% monthly momentum.',
+    keyMetricsHighlights: [
+      '$28.4k Verified Stripe MRR (+19.8% MoM)',
+      'High daily active usage (DAU/MAU > 62%)',
+      'Integration ecosystem with Slack, Zoom, and Stripe'
+    ],
+    capTable: [
+      { holder: 'Chloe Zhang', role: 'CEO', equityPercent: 48 },
+      { holder: 'Liam O\'Connor', role: 'CPO', equityPercent: 38 },
+      { holder: 'Advisors', role: 'Strategic Advisors', equityPercent: 14 }
+    ],
+    teamSize: 6,
+    founderId: 'user-chloe',
+    founderName: 'Chloe Zhang',
+    founderAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+    founderBio: 'Former Sales Lead at HubSpot, top performer with deep B2B pipeline playbook.',
+    founderEmail: 'chloe@nexaflow.app',
+    tags: ['Sales Tech', 'CRM', 'B2B SaaS', 'Stripe Verified'],
+    viewsCount: 1620,
+    savesCount: 110,
+    diligenceRequestsCount: 29,
+    aiDealScore: 88,
+    aiValuationMultiple: '7.1x ARR',
+    aiThesisSnippet: 'Strong user retention metrics in a massive TAM. Team knows how to sell into mid-market teams.',
+    featured: false,
+    createdAt: '2026-07-02',
+    mrrHistory: [
+      { month: 'Mar', mrr: 12000, arr: 144000, newCustomers: 18, churnedCustomers: 2, netRetentionRate: 108 },
+      { month: 'Apr', mrr: 15300, arr: 183600, newCustomers: 22, churnedCustomers: 2, netRetentionRate: 110 },
+      { month: 'May', mrr: 18900, arr: 226800, newCustomers: 26, churnedCustomers: 3, netRetentionRate: 112 },
+      { month: 'Jun', mrr: 22400, arr: 268800, newCustomers: 30, churnedCustomers: 2, netRetentionRate: 115 },
+      { month: 'Jul', mrr: 25100, arr: 301200, newCustomers: 33, churnedCustomers: 3, netRetentionRate: 116 },
+      { month: 'Aug', mrr: 28400, arr: 340800, newCustomers: 37, churnedCustomers: 2, netRetentionRate: 118 }
+    ]
+  },
+  {
+    id: 'startup-6',
+    name: 'CartPulse Analytics',
+    tagline: 'AI personalization & post-purchase upsell for Shopify Plus merchants',
+    description: 'CartPulse dynamically triggers high-converting one-click upsells and bundle recommendations based on live customer browsing telemetry.',
+    category: 'E-Commerce & Retail',
+    logo: 'https://images.unsplash.com/photo-1556742049-0a67e55722c0?w=150&auto=format&fit=crop&q=80',
+    stage: 'Seed',
+    foundedYear: 2024,
+    location: 'Toronto, Canada',
+    website: 'https://cartpulse.co',
+    mrr: 22600,
+    arr: 271200,
+    growthRateMoM: 16.5,
+    churnRateMonthly: 2.1,
+    cac: 510,
+    ltv: 5800,
+    customersCount: 290,
+    askAmount: 500000,
+    valuation: 3800000,
+    targetRound: 'Seed Round ($500k at $3.8M Valuation)',
+    isVerified: true,
+    verificationStatus: 'verified_stripe',
+    verificationProofDate: '2026-08-08',
+    stripeConnected: true,
+    pitchDeckTitle: 'CartPulse Seed Deck 2026',
+    pitchDeckSlidesCount: 10,
+    pitchSummary: 'Over $4.2M GMV processed through CartPulse widgets monthly. Generating reliable 12% revenue lift for 290 Shopify brands.',
+    keyMetricsHighlights: [
+      '$22.6k MRR with direct app store integration',
+      'Average 12.4% GMV lift for merchant installs',
+      'Top-rated 4.9 stars on Shopify App Store'
+    ],
+    capTable: [
+      { holder: 'Tariq Al-Mansoor', role: 'Founder & CEO', equityPercent: 82 },
+      { holder: 'Key Engineering Lead', role: 'Lead Dev', equityPercent: 18 }
+    ],
+    teamSize: 4,
+    founderId: 'user-tariq',
+    founderName: 'Tariq Al-Mansoor',
+    founderAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80',
+    founderBio: 'Former eCommerce agency owner, built and scaled multiple 7-figure stores.',
+    founderEmail: 'tariq@cartpulse.co',
+    tags: ['Shopify Plus', 'eCommerce', 'Upsell Engine', 'Stripe Verified'],
+    viewsCount: 980,
+    savesCount: 62,
+    diligenceRequestsCount: 15,
+    aiDealScore: 84,
+    aiValuationMultiple: '5.8x ARR',
+    aiThesisSnippet: 'Strong niche dominance within Shopify Plus ecosystem with fast payback periods on merchant acquisition.',
+    featured: false,
+    createdAt: '2026-07-15',
+    mrrHistory: [
+      { month: 'Mar', mrr: 11200, arr: 134400, newCustomers: 30, churnedCustomers: 4, netRetentionRate: 106 },
+      { month: 'Apr', mrr: 13800, arr: 165600, newCustomers: 38, churnedCustomers: 5, netRetentionRate: 108 },
+      { month: 'May', mrr: 16400, arr: 196800, newCustomers: 45, churnedCustomers: 6, netRetentionRate: 110 },
+      { month: 'Jun', mrr: 18900, arr: 226800, newCustomers: 50, churnedCustomers: 5, netRetentionRate: 111 },
+      { month: 'Jul', mrr: 20800, arr: 249600, newCustomers: 54, churnedCustomers: 6, netRetentionRate: 113 },
+      { month: 'Aug', mrr: 22600, arr: 271200, newCustomers: 58, churnedCustomers: 5, netRetentionRate: 114 }
+    ]
+  }
+];
+
+export const INITIAL_INVESTORS: Investor[] = [
+  {
+    id: 'inv-1',
+    name: 'Sarah Chen',
+    title: 'General Partner',
+    firm: 'Horizon Venture Capital',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    bio: 'Lead investor backing early-stage B2B SaaS and AI infrastructure. 14 investments in last 3 years with 2 exits.',
+    email: 'sarah@horizonvc.io',
+    checkSizeMin: 250000,
+    checkSizeMax: 1500000,
+    targetStages: ['Seed', 'Pre-Seed'],
+    targetSectors: ['AI & Machine Learning', 'B2B SaaS', 'DevTools & Infra'],
+    portfolioCount: 26,
+    totalInvested: '$32.5M',
+    isAccredited: true,
+    accreditationStatus: 'verified',
+    accreditationType: 'institutional_fund',
+    firmWebsite: 'https://horizonvc.io',
+    fundAum: '$85,000,000',
+    location: 'San Francisco, CA',
+    linkedin: 'https://linkedin.com/in/sarahchen-vc',
+    crunchbase: 'https://crunchbase.com/person/sarah-chen-horizon',
+    preferredGeographies: ['North America', 'Europe', 'Global Remote'],
+    minGrowthRateMoM: 15,
+    maxChurnRateMonthly: 3.5,
+    subscriptionTier: 'institutional_vc',
+    savedStartupIds: ['startup-1', 'startup-3'],
+    acceptingPitches: true,
+    minMrrToPitch: 20000,
+    pitchIntakeInstructions: 'We lead $500k-$1.5M Seed rounds. Startups must have verified Stripe MRR > $20k with >15% MoM expansion.',
+    receivedPitchesCount: 14,
+    credentialsDocuments: [
+      {
+        id: 'doc-1',
+        title: 'SEC Qualified Institutional Buyer (QIB) & Form D Mandate',
+        documentType: 'fund_lp_agreement',
+        fileName: 'Horizon_Fund_II_SEC_FormD_Signed.pdf',
+        fileSize: '2.4 MB',
+        uploadedAt: '2026-03-15',
+        status: 'verified',
+        issuerOrAuthority: 'U.S. Securities and Exchange Commission (SEC EDGAR)',
+        verificationNotes: 'Institutional LP Mandate verified by TrustMRR Compliance.'
+      },
+      {
+        id: 'doc-2',
+        title: 'CPA Accreditation Attestation Letter',
+        documentType: 'cpa_letter',
+        fileName: 'KPMG_Attestation_Sarah_Chen_2026.pdf',
+        fileSize: '1.1 MB',
+        uploadedAt: '2026-01-10',
+        status: 'verified',
+        issuerOrAuthority: 'KPMG LLP - Private Enterprise Audit Group',
+        verificationNotes: 'Confirmed net investable assets > $5M.'
+      }
+    ],
+    pitchPreferences: {
+      responseSla: '48_hours',
+      emailNotifications: true,
+      inAppAlerts: true,
+      weeklyDigest: true,
+      smsGrowthAlerts: true,
+      requireVerifiedStripe: true,
+      requirePitchDeck: true,
+      requireCapTableAccess: true,
+      autoDeclineBelowMrr: false,
+      autoReplyMessage: 'Thanks for reaching out to Horizon VC. We review all verified Stripe metrics weekly. If there is a fit with our Seed mandate, Sarah will schedule a partner call within 48 hours.'
+    }
+  },
+  {
+    id: 'inv-2',
+    name: 'Vikram Mehta',
+    title: 'Angel Investor & Syndicate Lead',
+    firm: 'VentureSprint Angel Syndicate',
+    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80',
+    bio: 'Former FinTech VP at Square, investing $50k-$200k personal checks into high-growth bootstrapped and Seed SaaS.',
+    email: 'vikram@venturesprint.co',
+    checkSizeMin: 50000,
+    checkSizeMax: 300000,
+    targetStages: ['Bootstrapped', 'Pre-Seed', 'Seed'],
+    targetSectors: ['FinTech & Payments', 'B2B SaaS', 'DevTools & Infra'],
+    portfolioCount: 18,
+    totalInvested: '$4.8M',
+    isAccredited: true,
+    accreditationStatus: 'verified',
+    accreditationType: 'finra_licensed',
+    firmWebsite: 'https://venturesprint.co',
+    fundAum: '$12,000,000',
+    location: 'Austin, TX',
+    linkedin: 'https://linkedin.com/in/vikrammehta-angel',
+    crunchbase: 'https://crunchbase.com/person/vikram-mehta-angel',
+    preferredGeographies: ['North America', 'United Kingdom', 'Global Remote'],
+    minGrowthRateMoM: 10,
+    maxChurnRateMonthly: 4.0,
+    subscriptionTier: 'accredited_investor',
+    savedStartupIds: ['startup-2', 'startup-5'],
+    acceptingPitches: true,
+    minMrrToPitch: 10000,
+    pitchIntakeInstructions: 'Fast angel checks ($50k-$200k) with 48h turnaround for capital-efficient SaaS with positive net retention.',
+    receivedPitchesCount: 22,
+    credentialsDocuments: [
+      {
+        id: 'doc-3',
+        title: 'FINRA Series 65 License Verification',
+        documentType: 'finra_license',
+        fileName: 'FINRA_CRD_Series65_Active.pdf',
+        fileSize: '840 KB',
+        uploadedAt: '2026-02-04',
+        status: 'verified',
+        issuerOrAuthority: 'FINRA BrokerCheck & State Securities Board',
+        verificationNotes: 'Active Series 65 Investment Adviser Representative.'
+      }
+    ],
+    pitchPreferences: {
+      responseSla: '24_hours',
+      emailNotifications: true,
+      inAppAlerts: true,
+      weeklyDigest: true,
+      smsGrowthAlerts: false,
+      requireVerifiedStripe: true,
+      requirePitchDeck: true,
+      requireCapTableAccess: false,
+      autoDeclineBelowMrr: true,
+      autoReplyMessage: 'Pitch received! I review angel deals daily. If you have active Stripe verification and >10% MoM growth, you will hear back within 24 hours.'
+    }
+  },
+  {
+    id: 'inv-3',
+    name: 'Elena Rostova-VC',
+    title: 'Managing Director',
+    firm: 'Apex Micro-Cap Fund',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+    bio: 'Dedicated micro-SaaS acquisition and equity growth fund. Looking for verified $20k-$100k MRR companies with clean metrics.',
+    email: 'elena@apexmicrocap.com',
+    checkSizeMin: 200000,
+    checkSizeMax: 2000000,
+    targetStages: ['Bootstrapped', 'Seed', 'Profitable'],
+    targetSectors: ['Security & Privacy', 'B2B SaaS', 'E-Commerce & Retail'],
+    portfolioCount: 34,
+    totalInvested: '$19.2M',
+    isAccredited: true,
+    accreditationStatus: 'verified',
+    location: 'New York, NY',
+    linkedin: 'https://linkedin.com/in/elenarostova-apex',
+    subscriptionTier: 'institutional_vc',
+    savedStartupIds: ['startup-2', 'startup-4'],
+    acceptingPitches: true,
+    minMrrToPitch: 15000,
+    pitchIntakeInstructions: 'Evaluating B2B SaaS and developer tools with demonstrable CAC payback under 8 months.',
+    receivedPitchesCount: 9
+  },
+  {
+    id: 'inv-4',
+    name: 'Marcus Sterling',
+    title: 'Partner',
+    firm: 'Redwood SaaS Capital',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    bio: 'Early-stage Series A lead investor. Currently deployed fund capital is fully allocated for Q3 2026.',
+    email: 'marcus@redwoodsaas.com',
+    checkSizeMin: 1000000,
+    checkSizeMax: 4000000,
+    targetStages: ['Series A', 'Seed'],
+    targetSectors: ['B2B SaaS', 'DevTools & Infra'],
+    portfolioCount: 42,
+    totalInvested: '$58.0M',
+    isAccredited: true,
+    accreditationStatus: 'verified',
+    location: 'Boston, MA',
+    linkedin: 'https://linkedin.com/in/marcus-sterling-vc',
+    subscriptionTier: 'institutional_vc',
+    savedStartupIds: [],
+    acceptingPitches: false,
+    minMrrToPitch: 50000,
+    pitchIntakeInstructions: 'Inbound pitches currently paused while finalizing fund close. Will reopen in Q4.',
+    receivedPitchesCount: 31
+  }
+];
+
+export const INITIAL_PITCH_REQUESTS: PitchRequest[] = [
+  {
+    id: 'pitch-1',
+    startupId: 'startup-1',
+    startupName: 'FlowOps AI',
+    startupLogo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
+    founderId: 'user-alex',
+    founderName: 'Alex Vance',
+    founderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    investorId: 'inv-1',
+    investorName: 'Sarah Chen',
+    investorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    investorFirm: 'Horizon Venture Capital',
+    askAmount: 1200000,
+    proposedEquity: 12.6,
+    pitchSubject: 'FlowOps AI Seed Round ($48.5k MRR, +23.4% MoM, Stripe Verified)',
+    status: 'meeting_scheduled',
+    createdAt: '2026-08-16T10:30:00Z',
+    deckUrl: 'https://flowops.ai/pitch-deck.pdf',
+    messages: [
+      {
+        id: 'msg-1',
+        senderRole: 'founder',
+        senderId: 'user-alex',
+        senderName: 'Alex Vance',
+        senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        text: 'Hi Sarah, loved your recent memo on DevOps AI agents. We just hit $48.5k MRR on FlowOps with 142 paying engineering teams (all verified on TrustMRR via Stripe). We are raising a $1.2M Seed to scale GTM. Would love to share our data room.',
+        timestamp: '2026-08-16T10:30:00Z'
+      },
+      {
+        id: 'msg-2',
+        senderRole: 'investor',
+        senderId: 'inv-1',
+        senderName: 'Sarah Chen',
+        senderAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+        text: 'Alex, impressive revenue trajectory and cohort retention on the TrustMRR dashboard! Let\'s schedule a 30-min partner intro this Thursday at 2pm PST to walk through your deployment pipeline.',
+        timestamp: '2026-08-17T14:15:00Z'
+      }
+    ]
+  },
+  {
+    id: 'pitch-2',
+    startupId: 'startup-2',
+    startupName: 'MetricScale',
+    startupLogo: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=150&auto=format&fit=crop&q=80',
+    founderId: 'user-rohan',
+    founderName: 'Rohan Sharma',
+    founderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    investorId: 'inv-2',
+    investorName: 'Vikram Mehta',
+    investorAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80',
+    investorFirm: 'VentureSprint Angel Syndicate',
+    askAmount: 600000,
+    proposedEquity: 14.3,
+    pitchSubject: 'MetricScale: $34.2k MRR Bootstrapped SaaS Opening Growth Round',
+    status: 'reviewed',
+    createdAt: '2026-08-18T09:00:00Z',
+    deckUrl: 'https://metricscale.io/diligence-memo.pdf',
+    messages: [
+      {
+        id: 'msg-3',
+        senderRole: 'founder',
+        senderId: 'user-rohan',
+        senderName: 'Rohan Sharma',
+        senderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+        text: 'Hi Vikram, following your angel investments in FinTech SaaS. MetricScale is at $34.2k MRR completely bootstrapped with 91% gross margins and 380 paying SaaS subscribers. Looking for angel partners who can help open enterprise channel partnerships.',
+        timestamp: '2026-08-18T09:00:00Z'
+      }
+    ]
+  }
+];
+
+export const INITIAL_DEAL_PIPELINE: DealPipelineItem[] = [
+  {
+    id: 'pipe-1',
+    startupId: 'startup-1',
+    investorId: 'inv-1',
+    stage: 'Diligence',
+    notes: 'Reviewed Stripe cohort proof. Cohort churn is under 1.1%. Scheduling partner meeting for term sheet discussion.',
+    targetCheck: 500000,
+    addedAt: '2026-08-15',
+    lastUpdated: '2026-08-19'
+  },
+  {
+    id: 'pipe-2',
+    startupId: 'startup-3',
+    investorId: 'inv-1',
+    stage: 'Lead',
+    notes: 'High organic GitHub adoption. Reviewing DevPilot AI deal score (91/100).',
+    targetCheck: 250000,
+    addedAt: '2026-08-18',
+    lastUpdated: '2026-08-18'
+  },
+  {
+    id: 'pipe-3',
+    startupId: 'startup-4',
+    investorId: 'inv-1',
+    stage: 'Term Sheet',
+    notes: 'Drafted $1.5M co-lead SAFE term sheet at $22M cap. Enterprise security pipeline verified.',
+    targetCheck: 1500000,
+    addedAt: '2026-08-05',
+    lastUpdated: '2026-08-17'
+  }
+];
+
+export const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
+  {
+    id: 'post-1',
+    authorId: 'user-alex',
+    authorName: 'Alex Vance',
+    authorRole: 'founder',
+    authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    isVerified: true,
+    authorCompany: 'FlowOps AI',
+    title: 'Milestone Unlocked: Hit $48.5k MRR! Here is what moved the needle for our B2B SaaS',
+    content: `When we started in January, we were stuck at $8k MRR with long sales cycles.
+Two big changes changed our trajectory:
+1. Product-led onboarding: Instead of requiring demo calls, we gave DevOps engineers a 1-click CLI installer that showed live savings in 2 minutes.
+2. Verified TrustMRR Badge on our landing page: Having third-party verified Stripe proof increased our annual contract conversion by 34% because enterprise buyers trust transparent metrics.
+
+Happy to answer any questions from fellow founders!`,
+    category: 'MRR Milestones',
+    likesCount: 58,
+    likedBy: ['inv-1', 'user-rohan'],
+    createdAt: '2026-08-19T08:20:00Z',
+    taggedStartupId: 'startup-1',
+    taggedStartupName: 'FlowOps AI',
+    mrrMilestone: 48500,
+    sharesCount: 14,
+    tags: ['#StripeVerified', '#B2BSaaS', '#MilestoneUnlocked'],
+    comments: [
+      {
+        id: 'comm-1',
+        authorId: 'inv-1',
+        authorName: 'Sarah Chen (Horizon VC)',
+        authorRole: 'investor',
+        authorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+        authorBadge: 'Accredited VC',
+        content: 'Spot on Alex. For early Seed SaaS, transparent verifiable growth is the #1 signal that gets term sheets signed quickly.',
+        createdAt: '2026-08-19T09:10:00Z'
+      },
+      {
+        id: 'comm-2',
+        authorId: 'user-rohan',
+        authorName: 'Rohan Sharma',
+        authorRole: 'founder',
+        authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+        authorBadge: 'Verified Founder',
+        content: 'Huge congrats! How did you structure your upfront annual discounts without hurting cash flow?',
+        createdAt: '2026-08-19T10:45:00Z'
+      }
+    ]
+  },
+  {
+    id: 'post-funding-1',
+    authorId: 'user-rohan',
+    authorName: 'Rohan Sharma',
+    authorRole: 'founder',
+    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    isVerified: true,
+    authorCompany: 'MetricScale',
+    title: '🚀 Closed $600k Pre-Seed Round on SAFE at $4.2M Post Cap! Here is how we ran our round',
+    content: `Excited to announce MetricScale has closed our $600k Pre-Seed funding round led by angel syndicates and Horizon VC!
+
+Key learnings from running our process:
+• Live Stripe Metrics as Leverage: Rather than sending static pitch decks that become obsolete in two weeks, sharing a live verified MRR dashboard ($34.2k MRR, +18.7% MoM) shortened our partner meeting-to-check cycle from 45 days to just 11 days.
+• Standard YC Post-Money SAFE: Kept legal friction to near zero.
+• Use of funds: 65% expanding our automated billing AI model and 35% enterprise integrations.
+
+Thank you to everyone in the TrustMRR community who supported our diligence process!`,
+    category: 'Funding & Deals',
+    likesCount: 94,
+    likedBy: ['inv-1', 'inv-2', 'user-alex', 'user-marcus'],
+    createdAt: '2026-08-20T11:00:00Z',
+    taggedStartupId: 'startup-2',
+    taggedStartupName: 'MetricScale',
+    fundingAmount: 600000,
+    sharesCount: 31,
+    tags: ['#FundingClosed', '#PreSeed', '#SAFE', '#Fintech'],
+    comments: [
+      {
+        id: 'comm-fund-1',
+        authorId: 'inv-1',
+        authorName: 'Sarah Chen (Horizon VC)',
+        authorRole: 'investor',
+        authorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+        authorBadge: 'Accredited VC',
+        content: 'Proud to lead this check! The retention cohort data and LTV/CAC ratio of 11.6x made this an easy decision for our investment committee.',
+        createdAt: '2026-08-20T11:30:00Z'
+      }
+    ]
+  },
+  {
+    id: 'post-tech-1',
+    authorId: 'user-marcus',
+    authorName: 'Marcus Sterling',
+    authorRole: 'founder',
+    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    isVerified: true,
+    authorCompany: 'DevPilot',
+    title: '⚡ New Tech Launch: How we reduced AI code review latency by 70% using speculative local inference',
+    content: `Building DevPilot taught us that developers will not wait 30 seconds for an LLM response during PR reviews.
+
+Here is our updated multi-tiered architecture:
+1. Fast local AST analyzer: Catches syntax, security leaks, and obvious formatting issues in under 80ms.
+2. Speculative Tree-of-Thought agent: Analyzes cross-file dependency impact and suggests refactoring diffs in parallel.
+3. Outcome: Median latency dropped from 28s to 4.2s per pull request.
+
+Check out our benchmark repo or review our architecture docs in our diligence room!`,
+    category: 'New Tech & AI',
+    likesCount: 67,
+    likedBy: ['user-alex', 'inv-3'],
+    createdAt: '2026-08-20T16:45:00Z',
+    taggedStartupId: 'startup-3',
+    taggedStartupName: 'DevPilot',
+    sharesCount: 19,
+    tags: ['#AIInfrastructure', '#DevTools', '#LLMArchitecture'],
+    comments: []
+  },
+  {
+    id: 'post-2',
+    authorId: 'inv-2',
+    authorName: 'Vikram Mehta',
+    authorRole: 'investor',
+    authorAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80',
+    isVerified: true,
+    authorCompany: 'VentureSprint Angels',
+    title: 'Investor Thesis: What I look for before writing a $100k-$250k angel check in 2026',
+    content: `Writing checks into 6 new startups this quarter.
+Here are the 3 non-negotiables in my investment thesis:
+1. Verifiable MRR: I love when founders connect Stripe or ChartMogul on TrustMRR. Saves weeks of preliminary diligence.
+2. Net Revenue Retention > 105%: If existing customers spend more over time, you can outgrow any CAC hurdle.
+3. Founder clarity on unit economics: Knowing exactly how much it costs to acquire an enterprise customer versus self-serve.
+
+Drop your questions below or pitch me directly through your TrustMRR dashboard!`,
+    category: 'Investor Insights',
+    likesCount: 88,
+    likedBy: ['user-alex', 'user-marcus', 'user-chloe'],
+    createdAt: '2026-08-18T14:30:00Z',
+    sharesCount: 22,
+    tags: ['#InvestorThesis', '#AngelInvesting', '#UnitEconomics'],
+    comments: [
+      {
+        id: 'comm-3',
+        authorId: 'user-marcus',
+        authorName: 'Marcus Sterling (DevPilot)',
+        authorRole: 'founder',
+        authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+        authorBadge: 'Verified Founder',
+        content: 'How do you evaluate DevTools that have huge open-source usage before monetization catches up?',
+        createdAt: '2026-08-18T15:00:00Z'
+      }
+    ]
+  },
+  {
+    id: 'post-3',
+    authorId: 'user-chloe',
+    authorName: 'Chloe Zhang',
+    authorRole: 'founder',
+    authorAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+    isVerified: true,
+    authorCompany: 'NexaFlow CRM',
+    title: 'GTM Strategy: Transitioning from $29/mo self-serve to $2,500/yr annual enterprise sales',
+    content: `We have 165 paying customers on NexaFlow, but 80% are on monthly cards.
+We are rolling out an Enterprise Tier with SSO, audit logs, and dedicated account management.
+Would love thoughts from investors and experienced B2B founders on optimal contract terms and billing cycles!`,
+    category: 'GTM & Growth',
+    likesCount: 43,
+    likedBy: ['inv-3', 'user-alex'],
+    createdAt: '2026-08-17T11:15:00Z',
+    taggedStartupId: 'startup-5',
+    taggedStartupName: 'NexaFlow CRM',
+    sharesCount: 8,
+    tags: ['#B2BSales', '#EnterpriseGTM', '#PricingStrategy'],
+    comments: []
+  }
+];
+
+export const INITIAL_USER_CONNECTIONS: UserConnection[] = [
+  {
+    id: 'conn-1',
+    userId: 'user-alex',
+    targetUserId: 'inv-1',
+    targetUserName: 'Sarah Chen',
+    targetUserAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    targetUserRole: 'investor',
+    targetUserCompany: 'Horizon Venture Capital',
+    status: 'connected',
+    createdAt: '2026-08-18T10:00:00Z'
+  },
+  {
+    id: 'conn-2',
+    userId: 'user-alex',
+    targetUserId: 'user-rohan',
+    targetUserName: 'Rohan Sharma',
+    targetUserAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    targetUserRole: 'founder',
+    targetUserCompany: 'MetricScale',
+    status: 'connected',
+    createdAt: '2026-08-19T14:20:00Z'
+  },
+  {
+    id: 'conn-3',
+    userId: 'user-alex',
+    targetUserId: 'inv-2',
+    targetUserName: 'Vikram Mehta',
+    targetUserAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80',
+    targetUserRole: 'investor',
+    targetUserCompany: 'VentureSprint Angels',
+    status: 'pending',
+    createdAt: '2026-08-20T09:15:00Z'
+  }
+];
+
+export const INITIAL_USER_FOLLOWS: UserFollow[] = [
+  { id: 'f-1', followerId: 'user-alex', followingId: 'inv-1', createdAt: '2026-08-15T08:00:00Z' },
+  { id: 'f-2', followerId: 'user-alex', followingId: 'user-rohan', createdAt: '2026-08-16T09:00:00Z' },
+  { id: 'f-3', followerId: 'user-alex', followingId: 'inv-3', createdAt: '2026-08-17T10:00:00Z' },
+  { id: 'f-4', followerId: 'inv-1', followingId: 'user-alex', createdAt: '2026-08-18T11:00:00Z' },
+  { id: 'f-5', followerId: 'user-rohan', followingId: 'user-alex', createdAt: '2026-08-19T12:00:00Z' },
+  { id: 'f-6', followerId: 'user-priya', followingId: 'user-alex', createdAt: '2026-08-19T14:00:00Z' },
+  { id: 'f-7', followerId: 'inv-2', followingId: 'user-alex', createdAt: '2026-08-20T16:00:00Z' }
+];
+
+export const INITIAL_INVESTOR_INTERESTS: InvestorInterest[] = [
+  {
+    id: 'int-1',
+    startupId: 'startup-1',
+    startupName: 'FlowOps AI',
+    startupLogo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
+    founderId: 'user-alex',
+    founderName: 'Alex Vance',
+    investorId: 'inv-1',
+    investorName: 'Sarah Chen',
+    investorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    investorFirm: 'Horizon Venture Capital',
+    investorTitle: 'General Partner',
+    investorEmail: 'sarah.chen@horizonvc.com',
+    isAccredited: true,
+    indicativeCheckSize: 250000,
+    interestLevel: 'high_conviction',
+    note: 'Very impressed by your verified $54k MRR and 14.2% MoM growth. We are looking to lead or co-lead your $1.2M round with a $250k check.',
+    signaledAt: '2026-08-20T10:30:00Z',
+    status: 'new'
+  },
+  {
+    id: 'int-2',
+    startupId: 'startup-1',
+    startupName: 'FlowOps AI',
+    startupLogo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
+    founderId: 'user-alex',
+    founderName: 'Alex Vance',
+    investorId: 'inv-2',
+    investorName: 'Vikram Mehta',
+    investorAvatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80',
+    investorFirm: 'VentureSprint Angels',
+    investorTitle: 'Managing Director & Syndicate Lead',
+    investorEmail: 'vikram@venturesprint.co',
+    isAccredited: true,
+    indicativeCheckSize: 100000,
+    interestLevel: 'exploring',
+    note: 'Our syndicate loves the low 2.1% monthly churn and high LTV/CAC. Would love to review the cap table and data room.',
+    signaledAt: '2026-08-21T09:15:00Z',
+    status: 'new'
+  },
+  {
+    id: 'int-3',
+    startupId: 'startup-1',
+    startupName: 'FlowOps AI',
+    startupLogo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
+    founderId: 'user-alex',
+    founderName: 'Alex Vance',
+    investorId: 'inv-3',
+    investorName: 'Elena Rostova',
+    investorAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+    investorFirm: 'Aurora Growth Capital',
+    investorTitle: 'Principal',
+    investorEmail: 'elena@auroracapital.eu',
+    isAccredited: true,
+    indicativeCheckSize: 500000,
+    interestLevel: 'term_sheet_ready',
+    note: 'Aurora is prepared to issue a formal term sheet. Please reach out to coordinate partner diligence.',
+    signaledAt: '2026-08-21T16:45:00Z',
+    status: 'data_room_shared'
+  }
+];
+
+export const INITIAL_DIRECT_CHAT_CONVERSATIONS: DirectChatConversation[] = [
+  {
+    id: 'chat-sarah',
+    participantIds: ['user-alex', 'inv-1'],
+    participantId: 'inv-1',
+    participantName: 'Sarah Chen',
+    participantAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    participantRole: 'investor',
+    participantCompany: 'Horizon Venture Capital',
+    lastMessage: 'Let us schedule a partner meeting for Thursday at 2 PM PST.',
+    lastMessageTime: '10:45 AM',
+    unreadCount: 1,
+    messages: [
+      {
+        id: 'm-1',
+        conversationId: 'chat-sarah',
+        senderId: 'inv-1',
+        senderName: 'Sarah Chen',
+        senderAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+        senderRole: 'investor',
+        text: 'Hi Alex! Loved your latest MRR milestone post and verified unit economics.',
+        timestamp: '10:30 AM'
+      },
+      {
+        id: 'm-2',
+        conversationId: 'chat-sarah',
+        senderId: 'user-alex',
+        senderName: 'Alex Vance',
+        senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        senderRole: 'founder',
+        text: 'Thanks Sarah! Our latest cohort retention hit 118% this month.',
+        timestamp: '10:38 AM'
+      },
+      {
+        id: 'm-3',
+        conversationId: 'chat-sarah',
+        senderId: 'inv-1',
+        senderName: 'Sarah Chen',
+        senderAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+        senderRole: 'investor',
+        text: 'Let us schedule a partner meeting for Thursday at 2 PM PST to review term sheet terms.',
+        timestamp: '10:45 AM'
+      }
+    ]
+  },
+  {
+    id: 'chat-rohan',
+    participantIds: ['user-alex', 'user-rohan'],
+    participantId: 'user-rohan',
+    participantName: 'Rohan Sharma',
+    participantAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    participantRole: 'founder',
+    participantCompany: 'MetricScale',
+    lastMessage: 'Congrats on the $48k MRR milestone Alex! Let us co-host a tech space.',
+    lastMessageTime: 'Yesterday',
+    unreadCount: 0,
+    messages: [
+      {
+        id: 'm-rohan-1',
+        conversationId: 'chat-rohan',
+        senderId: 'user-rohan',
+        senderName: 'Rohan Sharma',
+        senderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+        senderRole: 'founder',
+        text: 'Congrats on the $48k MRR milestone Alex! Let us co-host a tech space.',
+        timestamp: 'Yesterday'
+      }
+    ]
+  }
+];
+
+export const INITIAL_VERIFICATION_REQUESTS: VerificationRequest[] = [
+  {
+    id: 'vr-1',
+    startupId: 'startup-1',
+    startupName: 'FlowOps AI',
+    founderName: 'Alex Vance',
+    founderEmail: 'alex@flowops.ai',
+    claimedMrr: 48500,
+    claimedArr: 582000,
+    growthRate: 23.4,
+    proofType: 'Stripe API Live Sync',
+    proofDetails: 'Direct OAuth 2.0 Webhook verified: 142 active recurring subscriptions in good standing. Gross volume matches statement.',
+    submittedAt: '2026-08-15T09:00:00Z',
+    status: 'approved',
+    adminNotes: 'Stripe webhook verified and approved. Gold Verified Badge active.'
+  },
+  {
+    id: 'vr-2',
+    startupId: 'startup-pending-1',
+    startupName: 'AeroSync Logistics',
+    founderName: 'Kabir Patel',
+    founderEmail: 'kabir@aerosync.io',
+    claimedMrr: 15400,
+    claimedArr: 184800,
+    growthRate: 14.5,
+    proofType: 'Bank Statements & Merchant Audit',
+    proofDetails: 'Uploaded 3 months Mercury Bank merchant payout statements + Paddle revenue breakdown PDF.',
+    submittedAt: '2026-08-20T04:12:00Z',
+    status: 'pending'
+  },
+  {
+    id: 'vr-3',
+    startupId: 'startup-pending-2',
+    startupName: 'VibeCheck AI',
+    founderName: 'Elena Morris',
+    founderEmail: 'elena@vibecheck.ai',
+    claimedMrr: 28000,
+    claimedArr: 336000,
+    growthRate: 45.0,
+    proofType: 'ChartMogul / ProfitWell Integration',
+    proofDetails: 'ChartMogul API token verified with 89 active customer records. Awaiting final merchant chargeback audit.',
+    submittedAt: '2026-08-20T07:45:00Z',
+    status: 'pending'
+  }
+];
+
+export const INITIAL_PLATFORM_USERS: PlatformUser[] = [
+  {
+    id: 'user-alex',
+    name: 'Alex Vance',
+    email: 'alex@flowops.ai',
+    role: 'founder',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    companyOrFirm: 'FlowOps AI',
+    title: 'Founder & CEO',
+    subscriptionTier: 'elite_founder',
+    isAccredited: false,
+    isStripeVerified: true,
+    status: 'active',
+    joinedAt: '2026-01-15',
+    associatedStartupId: 'startup-1'
+  },
+  {
+    id: 'user-rohan',
+    name: 'Rohan Sharma',
+    email: 'rohan@metricscale.io',
+    role: 'founder',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    companyOrFirm: 'MetricScale',
+    title: 'Co-Founder & CTO',
+    subscriptionTier: 'pro_founder',
+    isAccredited: false,
+    isStripeVerified: true,
+    status: 'active',
+    joinedAt: '2026-02-10',
+    associatedStartupId: 'startup-2'
+  },
+  {
+    id: 'user-marcus',
+    name: 'Marcus Sterling',
+    email: 'marcus@devpilot.dev',
+    role: 'founder',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    companyOrFirm: 'DevPilot',
+    title: 'Founder & Lead Architect',
+    subscriptionTier: 'free',
+    isAccredited: false,
+    isStripeVerified: true,
+    status: 'active',
+    joinedAt: '2026-03-01',
+    associatedStartupId: 'startup-3'
+  },
+  {
+    id: 'user-chloe',
+    name: 'Chloe Zhang',
+    email: 'chloe@nexaflow.io',
+    role: 'founder',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+    companyOrFirm: 'NexaFlow CRM',
+    title: 'Founder & CEO',
+    subscriptionTier: 'pro_founder',
+    isAccredited: false,
+    isStripeVerified: true,
+    status: 'active',
+    joinedAt: '2026-04-18',
+    associatedStartupId: 'startup-5'
+  },
+  {
+    id: 'inv-1',
+    name: 'Sarah Chen',
+    email: 'sarah.chen@horizonvc.com',
+    role: 'investor',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    companyOrFirm: 'Horizon Venture Capital',
+    title: 'General Partner',
+    subscriptionTier: 'institutional_vc',
+    isAccredited: true,
+    isStripeVerified: false,
+    status: 'active',
+    joinedAt: '2025-11-20'
+  },
+  {
+    id: 'inv-2',
+    name: 'Vikram Mehta',
+    email: 'vikram@venturesprint.co',
+    role: 'investor',
+    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80',
+    companyOrFirm: 'VentureSprint Angels',
+    title: 'Managing Director & Angel Syndicate Lead',
+    subscriptionTier: 'accredited_investor',
+    isAccredited: true,
+    isStripeVerified: false,
+    status: 'active',
+    joinedAt: '2025-12-05'
+  },
+  {
+    id: 'inv-3',
+    name: 'Elena Rostova',
+    email: 'elena@auroracapital.eu',
+    role: 'investor',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+    companyOrFirm: 'Aurora Growth Capital',
+    title: 'Principal',
+    subscriptionTier: 'accredited_investor',
+    isAccredited: true,
+    isStripeVerified: false,
+    status: 'active',
+    joinedAt: '2026-01-08'
+  },
+  {
+    id: 'admin-1',
+    name: 'Dominik Weber',
+    email: 'compliance@trustmrr.com',
+    role: 'admin',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
+    companyOrFirm: 'TrustMRR Security & Compliance',
+    title: 'Chief Compliance Officer',
+    subscriptionTier: 'institutional_vc',
+    isAccredited: true,
+    isStripeVerified: true,
+    status: 'active',
+    joinedAt: '2025-01-01'
+  }
+];
