@@ -33,7 +33,7 @@ app.post("/api/ai/evaluate-startup", async (req, res) => {
   try {
     const { startupName, category, mrr, arr, growthRate, churnRate, askAmount, valuation, description, pitchSummary } = req.body;
     
-    const ai = getGeminiClient();
+    const ai = await getGeminiClient();
     if (!ai) {
       // Return smart calculated fallback if API key is not configured
       const mrrNum = Number(mrr) || 12000;
