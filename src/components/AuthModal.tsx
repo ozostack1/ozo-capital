@@ -33,7 +33,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const { login, showToast } = useApp();
 
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
-  const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole === 'guest' ? 'founder' : initialRole);
+  const [selectedRole, setSelectedRole] = useState<'founder' | 'investor'>(initialRole === 'investor' ? 'investor' : 'founder');
   
   // Custom Form Inputs
   const [email, setEmail] = useState('');
@@ -49,8 +49,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     e.preventDefault();
     setErrorMsg('');
 
-    if (!email.trim() || !password.trim()) {
-      setErrorMsg('Please enter both email and password.');
+    if (!email.trim()) {
+      setErrorMsg('Please enter your work email address.');
       return;
     }
 
@@ -147,17 +147,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Body Content */}
         <div className="p-4 sm:p-5 space-y-4 max-h-[72vh] overflow-y-auto">
-          {/* Role Selection Tabs */}
+          {/* Role Selection Tabs - Strictly Founder & Investor */}
           <div>
             <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
               Select Your Role:
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               {/* Founder Role */}
               <button
                 type="button"
                 onClick={() => setSelectedRole('founder')}
-                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                   selectedRole === 'founder'
                     ? 'bg-amber-50/80 border-2 border-amber-400 text-[#0A1128] shadow-xs'
                     : 'bg-slate-50 border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-100'
@@ -168,14 +168,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   {selectedRole === 'founder' && <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />}
                 </div>
                 <span className="text-xs font-extrabold text-[#0A1128] block">Founder</span>
-                <span className="text-[10px] text-slate-500 leading-tight block">Raise capital</span>
+                <span className="text-[10px] text-slate-500 leading-tight block">Raise capital & verify metrics</span>
               </button>
 
               {/* Investor Role */}
               <button
                 type="button"
                 onClick={() => setSelectedRole('investor')}
-                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                   selectedRole === 'investor'
                     ? 'bg-amber-50/80 border-2 border-amber-400 text-[#0A1128] shadow-xs'
                     : 'bg-slate-50 border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-100'
@@ -186,25 +186,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   {selectedRole === 'investor' && <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />}
                 </div>
                 <span className="text-xs font-extrabold text-[#0A1128] block">Investor</span>
-                <span className="text-[10px] text-slate-500 leading-tight block">Deploy capital</span>
-              </button>
-
-              {/* Admin Role */}
-              <button
-                type="button"
-                onClick={() => setSelectedRole('admin')}
-                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                  selectedRole === 'admin'
-                    ? 'bg-amber-50/80 border-2 border-amber-400 text-[#0A1128] shadow-xs'
-                    : 'bg-slate-50 border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-100'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <ShieldCheck className={`w-4 h-4 ${selectedRole === 'admin' ? 'text-amber-600' : 'text-slate-400'}`} />
-                  {selectedRole === 'admin' && <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />}
-                </div>
-                <span className="text-xs font-extrabold text-[#0A1128] block">Compliance</span>
-                <span className="text-[10px] text-slate-500 leading-tight block">Audit & KYC</span>
+                <span className="text-[10px] text-slate-500 leading-tight block">Deploy capital & view deal flow</span>
               </button>
             </div>
           </div>
@@ -342,24 +324,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     </div>
                   </button>
                 </>
-              )}
-
-              {selectedRole === 'admin' && (
-                <button
-                  type="button"
-                  onClick={() => handleFastDemoLogin('admin')}
-                  className="col-span-2 p-2 bg-white hover:bg-slate-50 hover:border-amber-400 border border-slate-200 rounded-lg text-left transition-all cursor-pointer flex items-center space-x-2.5 shadow-xs"
-                >
-                  <img 
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" 
-                    alt="Compliance"
-                    className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0" 
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-[#0A1128] truncate">TrustMRR Compliance Officer</p>
-                    <p className="text-[10px] text-slate-500 font-mono truncate">Full Ledger Audit & Badging Authority</p>
-                  </div>
-                </button>
               )}
             </div>
           </div>

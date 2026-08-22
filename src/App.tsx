@@ -116,57 +116,86 @@ const MainLayout: React.FC = () => {
           </div>
         )}
 
-        {/* View Router - Strictly Gated: If not authenticated, ONLY render LandingPage */}
-        {!isAuthenticated ? (
-          <LandingPage
-            onOpenNewStartupModal={handleOpenCreateStartup}
-            onSelectStartup={(s) => setSelectedStartupForDetail(s)}
-            onOpenAIAnalysis={(s) => setSelectedStartupForAI(s)}
-          />
-        ) : (
-          <>
-            {currentView === 'landing' && (
-              <LandingPage
-                onOpenNewStartupModal={handleOpenCreateStartup}
-                onSelectStartup={(s) => setSelectedStartupForDetail(s)}
-                onOpenAIAnalysis={(s) => setSelectedStartupForAI(s)}
-              />
-            )}
-
-            {currentView === 'directory' && (
-              <PublicDirectory
-                onSelectStartup={(s) => setSelectedStartupForDetail(s)}
-                onOpenPitch={handleOpenPitch}
-                onOpenAIAnalysis={(s) => setSelectedStartupForAI(s)}
-                onSignalInterest={handleSignalInterest}
-              />
-            )}
-
-            {currentView === 'founder_dashboard' && (
-              <FounderDashboard
-                onOpenNewStartupModal={handleOpenCreateStartup}
-                onOpenAIAnalysis={(s) => setSelectedStartupForAI(s)}
-                onSelectInvestorToPitch={handleSelectInvestorToPitch}
-              />
-            )}
-
-            {currentView === 'investor_dashboard' && (
-              <InvestorDashboard
-                onSelectStartup={(s) => setSelectedStartupForDetail(s)}
-                onOpenAIAnalysis={(s) => setSelectedStartupForAI(s)}
-                onSignalInterest={handleSignalInterest}
-              />
-            )}
-
-            {currentView === 'community' && (
-              <CommunityHub />
-            )}
-
-            {currentView === 'admin_panel' && isAdminAuthenticated && currentRole === 'admin' && (
-              <AdminPanel />
-            )}
-          </>
-        )}
+        {/* View Router - Robust & Responsive Multi-Role Renderer */}
+        {(() => {
+          switch (currentView) {
+            case 'directory':
+              return (
+                <PublicDirectory
+                  onSelectStartup={(s) => setSelectedStartupForDetail(s)}
+                  onOpenPitch={handleOpenPitch}
+                  onOpenAIAnalysis={(s) => setSelectedStartupForAI(s)}
+                  onSignalInterest={handleSignalInterest}
+                />
+              );
+            case 'community':
+              return <CommunityHub />;
+            case 'founder_dashboard':
+              if (!isAuthenticated || currentRole === 'guest') {
+                return (
+                  <LandingPage
+                    onOpenNewStartupModal={handleOpenCreateStartup}
+                    onSelectStartup={(s) => setSelectedStartupForDetail(s)}
+                    onOpenAIAnalysis={(s) => setSelectedStartupForAI(s)}
+                  />
+                );
+              }
+              return (
+                <FounderDashboard
+                  onOpenNewStartupModal={handleOpenCreateStartup}
+                  onOpenAIAnalysis={(s) => setSelectedStartupForAI(s)}
+                  onSelectInvestorToPitch={handleSelectInvestorToPitch}
+                />
+              );
+            case 'investor_dashboard':
+              if (!isAuthenticated || currentRole === 'guest') {
+                return (
+                  <LandingPage
+                    onOpenNewStartupModal={handleOpenCreateStartup}
+                    onSelectStartup={(s) => setSelectedStartupForDetail(s)}
+                    onOpenAIAnalysis={(s) => setSelectedStartupForAI(s)}
+                  />
+                );
+              }
+              return (
+                <InvestorDashboard
+                  onSelectStartup={(s) => setSelectedStartupForDetail(s)}
+                  onOpenAIAnalysis={(s) => setSelectedStartupForAI(s)}
+                  onSignalInterest={handleSignalInterest}
+                />
+              );
+            case 'admin_panel':
+              if (isAdminAuthenticated && currentRole === 'admin') {
+                return <AdminPanel />;
+              }
+              return (
+                <div className="text-center py-16 bg-white dark:bg-[#0A1128] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 max-w-lg mx-auto my-12">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-4 text-amber-500">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Admin Gateway Clearance</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                    Compliance auditing, Stripe ledger verification, and KYC controls require administrative clearance.
+                  </p>
+                  <button
+                    onClick={openAdminLoginModal}
+                    className="px-6 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+                  >
+                    Authenticate Admin Session
+                  </button>
+                </div>
+              );
+            case 'landing':
+            default:
+              return (
+                <LandingPage
+                  onOpenNewStartupModal={handleOpenCreateStartup}
+                  onSelectStartup={(s) => setSelectedStartupForDetail(s)}
+                  onOpenAIAnalysis={(s) => setSelectedStartupForAI(s)}
+                />
+              );
+          }
+        })()}
       </main>
 
       {/* Modals */}

@@ -338,6 +338,14 @@ export interface UserFollow {
   createdAt: string;
 }
 
+export interface MessageAttachment {
+  id: string;
+  type: 'mrr_snapshot' | 'term_sheet' | 'diligence_memo' | 'link';
+  title: string;
+  subtitle?: string;
+  data?: Record<string, any>;
+}
+
 export interface DirectChatMessage {
   id: string;
   conversationId: string;
@@ -345,13 +353,24 @@ export interface DirectChatMessage {
   senderName: string;
   senderAvatar: string;
   senderRole: UserRole;
+  recipientId: string;
+  recipientName: string;
+  recipientAvatar: string;
+  recipientRole: UserRole;
   text: string;
   timestamp: string;
+  createdAt: string;
+  isRead: boolean;
+  readAt?: string;
+  deliveryStatus: 'sent' | 'delivered' | 'read';
+  isEncrypted: boolean;
+  encryptionFingerprint?: string;
+  attachments?: MessageAttachment[];
 }
 
 export interface DirectChatConversation {
   id: string;
-  participantIds?: string[];
+  participantIds: [string, string] | string[];
   participantId: string;
   participantName: string;
   participantAvatar: string;
@@ -359,8 +378,13 @@ export interface DirectChatConversation {
   participantCompany: string;
   lastMessage: string;
   lastMessageTime: string;
+  lastSenderId?: string;
   unreadCount: number;
+  unreadCounts?: Record<string, number>;
   messages: DirectChatMessage[];
+  isEndToEndEncrypted?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface VerificationRequest {

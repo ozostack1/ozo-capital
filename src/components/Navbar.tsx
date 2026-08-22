@@ -85,11 +85,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewStartupModal }) => {
 
   // Compute live single-user isolated unread messages
   const userConversations = chatConversations.filter(c => {
-    if (!currentUser) return false;
-    if (c.participantIds && c.participantIds.length > 0) return c.participantIds.includes(currentUser.id);
-    return c.participantId === currentUser.id || c.messages?.some(m => m.senderId === currentUser.id);
+    if (!currentUser || currentUser.role === 'guest') return false;
+    return (
+      Array.isArray(c.participantIds) &&
+      c.participantIds.length === 2 &&
+      c.participantIds.includes(currentUser.id)
+    );
   });
-  const totalUserUnreadMessages = userConversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+  const totalUserUnreadMessages = userConversations.reduce((acc, c) => {
+    const unread = c.messages.filter(m => m.recipientId === currentUser?.id && !m.isRead).length;
+    return acc + unread;
+  }, 0);
 
   const roleStyles: Record<UserRole, { badge: string; border: string; bg: string; text: string }> = {
     guest: { badge: 'Guest Visitor', border: 'border-slate-200', bg: 'bg-slate-50', text: 'text-slate-700' },
